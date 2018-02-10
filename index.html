@@ -75,7 +75,148 @@
     }
 
     // Put your part two code here ***********************
-    
+    var width = 700;
+    var height = 400;
+
+    var margin = {
+      top: 20,
+      right: 20,
+      bottom: 30,
+      left: 50
+    };
+
+    // var barWidth = width / data1.length;
+    //scale linear x
+    d3.csv('data/anscombe_I.csv', function(error, data1) {
+      console.log(data1);
+      var barHeight = 10;
+
+      var x = d3.scaleLinear()
+        .range([0, width]);
+
+      //scale linear y
+      var y = d3.scaleLinear()
+        .range([height, 0]);
+
+      //x and y domain
+      x.domain(d3.extent(data1, function(d) {
+        d.x = parseFloat(d.x);
+        return d.x;
+      }));
+
+      y.domain([0, d3.max(data1, function(d) {
+        d.y = parseInt(d.y);
+        return d.y;
+      })]);
+
+      //creating svg element
+      var svg = d3.select('#barchart')
+        .append('svg')
+        .attr("width", width + margin.left + margin.right)
+        .attr("height", height + margin.top + margin.bottom)
+        .append("g") //regular graphic operation
+        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+      var valueline = d3.line()
+        .x(function(d) {
+          return x(d.x);
+        })
+        .y(function(d) {
+          return y(d.y);
+        });
+
+      svg.append("path")
+        .data([data1])
+        .attr("class", "line")
+        .attr("d", valueline)
+        .attr('fill', 'none')
+        .attr('stroke', 'green')
+        .attr('stroke-width', 2);
+
+
+      svg.selectAll("circle")
+        .data(data1)
+        .enter()
+        .append("circle")
+        .attr("r", 4)
+        .attr("cy", function(d) {
+          return y(d.y);
+        })
+        .attr("cx", function(d, i) {
+          return x(d.x);
+        });
+
+      //x and y axisLeft
+      // Add the X Axis
+      svg.append('g')
+        .attr('transform', 'translate(0,' + height + ')')
+        .call(d3.axisBottom(x));
+
+      // Add the Y Axis
+      svg.append('g')
+        .call(d3.axisLeft(y));
+      var xLabel = svg.append('text')
+        .attr('class', 'label')
+        .text(xVal)
+        .attr("x", width - 20)
+        .attr('y', height - 10);
+
+      svg.append('g')
+        .call(d3.axisLeft(y));
+      var yLabel = svg.append('text')
+        .attr('class', 'label')
+        .text(yVal)
+        .attr('y', -10)
+        .attr('transform', 'rotate(90)')
+        .style('text-anchor', 'start');
+
+
+
+
+
+      // A function to retrieve the next value in the vals list
+      function getNextVal(val) {
+        return vals[(vals.indexOf(val) + 1) % vals.length];
+      };
+
+      // A function to change what values we plot on the x-axis
+      function setXval(val) {
+        // Update xVal
+        xVal = val;
+        // Update the axis
+        xScale.domain([d3.min(data, function(d) {
+            return parseFloat(d[xVal]);
+          }) - 1,
+          d3.max(data, function(d) {
+            return parseFloat(d[xVal]);
+          }) + 1
+        ])
+        xAxis.scale(xScale);
+        xAxisG.call(xAxis);
+        xLabel.text(xVal);
+        // Update the points
+
+      };
+
+      // A function to change what values we plot on the y-axis
+      function setYval(val) {
+        // Update yVal
+        yVal = val;
+        // Update the axis
+        yScale.domain([d3.min(data, function(d) {
+            return parseFloat(d[yVal]);
+          }) - 1,
+          d3.max(data, function(d) {
+            return parseFloat(d[yVal]);
+          }) + 1
+        ])
+        yAxis.scale(yScale);
+        yAxisG.call(yAxis);
+        yLabel.text(yVal);
+        // Update the points
+
+      };
+    });
 
     // Put your part three & four code here ***********************
 
