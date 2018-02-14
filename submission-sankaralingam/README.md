@@ -53,7 +53,7 @@ If it was the first time I would simply display the data. If it was not the firs
 _Source:_  [inspiration](http://bl.ocks.org/enjalot/1429426)
 
 <h3> Whistle : Replication </h3>
-Used tableau for replication in similar fashion and the details can be found [here](WYSIWYG/).
+Used tableau for replication in similar fashion and the details can be found 'WYSIWYG'.
 Using Tableau was very easy and it was simple drag and drop, but I did not understand many intricate details of the data
 when I used drag-n-drop setting. For example, understanding the ordering data was not possible, as Tableau automatically
 joined the points in correct fashion. I feel utilizing d3.js will give us more insights to the corner cases, than Tableau.
