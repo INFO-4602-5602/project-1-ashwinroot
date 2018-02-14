@@ -1,0 +1,538 @@
+<html>
+
+<head>
+  <title>Project 0</title>
+  <style type="text/css" href="project0.css"></style>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+  <!--Put your D3 import statement between these two lines-->
+  <script src="https://d3js.org/d3.v4.min.js"></script>
+  <!--Put your D3 import statement between these two lines-->
+</head>
+
+<body>
+  <div id="partOne">
+    <h1>Part One: </h1>
+  </div>
+
+  <div id="partTwo">
+    <h1>Part Two: </h1>
+    <select id="dropdown1"></select>
+    <!-- <input type="checkbox" id="check"> Sorted along x -->
+    <div id="barchart">
+    </div>
+
+  </div>
+
+  <div id="partThree">
+    <h1>Part Three &amp; Four: </h1>
+    <select id="dropdown2"></select>
+    <div id="scatterplot">
+      <p id="scatterLabel"></p>
+    </div>
+  </div>
+
+  <div id="partFive">
+    <h1>Part Five: </h1>
+    <div id="scatterplotSet">
+    </div>
+  </div>
+
+  <script type="text/javascript">
+    // Put your part one code here ***********************
+    var data1;
+    var data2;
+    var data3;
+    var data4;
+    d3.csv('data/anscombe_I.csv', function(error, data) {
+      console.log(data);
+      data1 = data;
+      checkDataset(data);
+
+    });
+    d3.csv('data/anscombe_II.csv', function(error, data) {
+      console.log(data);
+      data2 = data;
+      checkDataset(data);
+
+
+    });
+    d3.csv('data/anscombe_III.csv', function(error, data) {
+      console.log(data);
+      data3 = data;
+      checkDataset(data);
+
+    });
+    d3.csv('data/anscombe_IV.csv', function(error, data) {
+      console.log(data);
+      data4 = data;
+      checkDataset(data);
+
+
+    });
+
+    // Leave this to test your data uploading. All data uploading should be above this line
+    function checkDataset(data) {
+      if (data.length == 11)
+        $("#partOne").append("<p>data loaded correctly</p>");
+      else
+        $("#partOne").append("<p>data loaded incorrectly. Try using the debugger to help you find the bug!</p>");
+    }
+
+    // Put your part two code here ***********************
+    dropdown_options = [{
+        value: "data/anscombe_I.csv",
+        text: "anscombe_I"
+      },
+      {
+        value: "data/anscombe_II.csv",
+        text: "anscombe_II"
+      },
+      {
+        value: "data/anscombe_III.csv",
+        text: "anscombe_III"
+      },
+      {
+        value: "data/anscombe_IV.csv",
+        text: "anscombe_IV"
+      },
+
+    ]
+
+    function plotScatter(datasource, id, width, height, transition, isPath) {
+
+      d3.csv(datasource, function(error, data1) {
+
+        var barHeight = 10;
+
+
+        var x = d3.scaleLinear()
+          .range([0, width]);
+
+        //scale linear y
+        var y = d3.scaleLinear()
+          .range([height, 0]);
+
+        //x and y domain
+        x.domain(d3.extent(data1, function(d) {
+          d.x = parseFloat(d.x);
+          return d.x;
+        }));
+
+        y.domain([0, 0.5+ d3.max(data1, function(d) {
+          d.y = parseFloat(d.y);
+          return d.y;
+        })]);
+
+        //creating svg element
+        var tooltip = d3.select("body").append("div")
+          .attr("class", "tooltip")
+          .style("position", "absolute")
+          .style("z-index", "10")
+          .style("opacity", "0");
+
+        var valueline = d3.line()
+          .x(function(d) {
+            return x(d.x);
+          })
+          .y(function(d) {
+            return y(d.y);
+          });
+
+          function compare(a,b)
+            {
+              if(a.x > b.x)
+                return 1;
+              else {
+                return -1;
+              }
+            }
+            data1.sort(compare);
+            console.log(data1);
+
+
+        var mouseClick = function(d) {
+          var p = d3.select("#scatterLabel")
+            .text("(x,y) : (" + d.x + "," + d.y + ")");
+        }
+
+        var mouseover = function(d) {
+          var p = d3.select(this)
+            .style("fill", "lightblue");
+          tooltip.text("(" + d.x + "," + d.y + ")");
+          tooltip.style("top", d3.event.pageY - 10 + "px")
+            .style("left", (d3.event.pageX + 10) + "px");
+          tooltip.style("opacity", "0.9");
+        }
+
+        var mouseout = function(d) {
+          var p = d3.select(this).style("fill", "black");
+          tooltip.transition()
+            .duration(500)
+            .style("opacity", 0);
+        }
+
+
+        var svg;
+        if (!transition) {
+          svg = d3.select(id)
+            .append('svg')
+            .attr("width", width + margin.left + margin.right)
+            .attr("height", height + margin.top + margin.bottom)
+            .append("g") //regular graphic operation
+            .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+            var valueline = d3.line()
+              .x(function(d) {
+                return x(d.x);
+              })
+              .y(function(d) {
+                return y(d.y);
+              });
+
+
+            if(isPath)
+            {
+              svg.append("path")
+                .data([data1])
+                .attr("class", "line")
+                .attr("d", valueline)
+                .attr('fill', 'none')
+                .attr('stroke', 'lightblue')
+                .attr('stroke-width', 2);
+            }
+          svg.selectAll("circle")
+            .data(data1)
+            .enter()
+            .append("circle")
+            .attr("r", 4)
+            .attr("cy", function(d) {
+              return y(d.y);
+            })
+            .attr("cx", function(d, i) {
+              return x(d.x);
+            })
+            .on('mousedown', mouseClick)
+            .on('mouseover', mouseover)
+            .on('mouseout', mouseout);
+
+          svg.append('g')
+            .attr('class', 'xaxis')
+            .attr('transform', 'translate(0,' + height + ')')
+            .call(d3.axisBottom(x));
+
+          // Add the Y Axis
+          svg.append('g')
+            .attr('class', 'yaxis')
+            .call(d3.axisLeft(y));
+
+
+          svg.append("text")
+            .attr("x", (_width / 2))
+            .attr("y", (margin.top / 2))
+            .attr("text-anchor", "middle")
+            .attr('class', 'title')
+            .style("font-size", "16px")
+            .style("text-decoration", "underline")
+            .text(datasource);
+
+
+          var xLabel = svg.append('text')
+            .attr('class', 'label')
+            .text("x")
+            .attr("x", width - 20)
+            .attr('y', height - 10);
+
+
+          var yLabel = svg.append('text')
+            .attr('class', 'label')
+            .text("y")
+            .attr('x', -20)
+            .attr('y', 15)
+            .attr('transform', 'rotate(-90)')
+            .style('text-anchor', 'start');
+
+
+        } else {
+          svg = d3.select(id).select("svg");
+          var valueline = d3.line()
+            .x(function(d) {
+              return x(d.x);
+            })
+            .y(function(d) {
+              return y(d.y);
+            });
+
+
+
+          svg.selectAll("circle")
+            .data(data1)
+            .transition()
+            .duration(500)
+            .delay(function(d, i) {
+              return i / data1.length * 500; // Dynamic delay (i.e. each item delays a little longer)
+            })
+            .attr('cx', function(d) {
+              return x(d.x);
+            })
+            .attr('cy', function(d) {
+              return y(d.y);
+            });
+
+          if(isPath)
+            {
+              svg.select("path")
+              .data([data1])
+              .attr("class", "line")
+              .transition()
+              .duration(500)
+              .attr("d", valueline)
+              .attr('fill', 'none')
+              .attr('stroke', 'lightblue')
+              .attr('stroke-width', 2);
+            }
+
+          svg.select(".xaxis")
+            .transition()
+            .duration(1000)
+            .call(d3.axisBottom(x));
+          svg.select(".yaxis")
+            .transition()
+            .duration(1000)
+            .call(d3.axisLeft(y));
+          svg.select('.title')
+            .transition()
+            .duration(1000)
+            .text(datasource);
+
+
+        }
+
+
+      });
+    }
+
+
+    d3.select("#dropdown1")
+      .selectAll("option")
+      .data(dropdown_options)
+      .enter()
+      .append("option")
+      .attr("value", function(option) {
+        return option.value;
+      })
+      .text(function(option) {
+        return option.text;
+      });
+
+    var selected_dataset_1 = "data/anscombe_I.csv";
+    var already_there_1 = false;  //to see if we already have the svg on the canvas
+    var dropDown = d3.select("#dropdown1");
+
+    dropDown.on("change", function() {
+      selected_dataset_1 = d3.event.target.value;
+      if (already_there_1) {
+        plotScatter(selected_dataset_1, '#barchart', width, height, true);
+      } else
+        plotScatter(selected_dataset_1, '#barchart', width, height, false);
+      already_there_1 = true;
+    })
+
+
+
+    // Put your part three & four code here ***********************
+
+
+        d3.select("#dropdown2")
+          .selectAll("option")
+          .data(dropdown_options)
+          .enter()
+          .append("option")
+          .attr("value", function(option) {
+            return option.value;
+          })
+          .text(function(option) {
+            return option.text;
+          });
+
+        var width = 700;
+        var height = 400;
+
+        var margin = {
+          top: 20,
+          right: 20,
+          bottom: 30,
+          left: 50
+        };
+
+        var selected_dataset = "data/anscombe_I.csv";
+        var already_there = false;
+        var sorted = false;
+        var dropDown = d3.select("#dropdown2");
+
+        dropDown.on("change", function() {
+          selected_dataset = d3.event.target.value;
+          if (already_there) {
+            plotScatter(selected_dataset, '#scatterplot', width, height,true,true);
+          } else
+            plotScatter(selected_dataset, '#scatterplot', width, height,false,true);
+          already_there = true;
+        })
+
+    // Put your part five code here ***********************
+
+    function semiplotScatter(datasource, svg, width, height) {
+
+      d3.csv(datasource, function(error, data1) {
+
+        var barHeight = 10;
+
+        var x = d3.scaleLinear()
+          .range([0, width]);
+
+        //scale linear y
+        var y = d3.scaleLinear()
+          .range([height, 0]);
+
+        //x and y domain
+        x.domain(d3.extent(data1, function(d) {
+          d.x = parseFloat(d.x);
+          return d.x;
+        }));
+
+        y.domain([0, 1+ d3.max(data1, function(d) {
+          d.y = parseFloat(d.y);
+          return d.y;
+        })]);
+
+
+
+        var tooltip = d3.select("body").append("div")
+          .attr("class", "tooltip")
+          .style("position", "absolute")
+          .style("z-index", "10")
+          .style("opacity", "0");
+
+        var valueline = d3.line()
+          .x(function(d) {
+            return x(d.x);
+          })
+          .y(function(d) {
+            return y(d.y);
+          });
+
+
+        var mouseClick = function(d) {
+          var p = d3.select("#scatterLabel")
+            .text("(x,y) : (" + d.x + "," + d.y + ")");
+        }
+
+        var mouseover = function(d) {
+          var p = d3.select(this)
+            .style("fill", "lightblue");
+          tooltip.text("(" + d.x + "," + d.y + ")");
+          tooltip.style("top", d3.event.pageY - 10 + "px")
+            .style("left", (d3.event.pageX + 10) + "px");
+          tooltip.style("opacity", "0.9");
+        }
+
+        var mouseout = function(d) {
+          var p = d3.select(this).style("fill", "black");
+          tooltip.transition()
+            .duration(500)
+            .style("opacity", 0);
+        }
+
+
+        svg.selectAll("circle")
+          .data(data1)
+          .enter()
+          .append("circle")
+          .attr("r", 4)
+          .attr("cy", function(d) {
+            return y(d.y);
+          })
+          .attr("cx", function(d, i) {
+            return x(d.x);
+          })
+          .on('mousedown', mouseClick)
+          .on('mouseover', mouseover)
+          .on('mouseout', mouseout);
+
+        //x and y axisLeft
+        // Add the X Axis
+        svg.append('g')
+          .attr('transform', 'translate(0,' + height + ')')
+          .call(d3.axisBottom(x));
+
+        // Add the Y Axis
+        svg.append('g')
+          .call(d3.axisLeft(y));
+        var xLabel = svg.append('text')
+          .attr('class', 'label')
+          .text("x")
+          .attr("x", width - 20)
+          .attr('y', height - 10);
+
+        svg.append('g')
+          .call(d3.axisLeft(y));
+        var yLabel = svg.append('text')
+          .attr('class', 'label')
+          .text("y")
+          .attr('x', -20)
+          .attr('y', 15)
+          .attr('transform', 'rotate(-90)')
+          .style('text-anchor', 'start');
+
+        svg.append("text")
+          .attr("x", (_width / 2))
+          .attr("y", (margin.top / 2))
+          .attr("text-anchor", "middle")
+          .style("font-size", "16px")
+          .style("text-decoration", "underline")
+          .text(datasource);
+
+      });
+    }
+
+    var _width = width / 2;
+    var _height = height / 2;
+
+    var svgOne = d3.select('#scatterplotSet')
+      .append('svg')
+      .attr("width", _width + margin.left + margin.right)
+      .attr("height", _height + margin.top + margin.bottom)
+      .append("g") //regular graphic operation
+      .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+    semiplotScatter('data/anscombe_I.csv', svgOne, _width, _height);
+
+
+
+
+    var svgTwo = d3.select('#scatterplotSet')
+      .append('svg')
+      .attr("width", _width + margin.left + margin.right)
+      .attr("height", _height + margin.top + margin.bottom)
+      .append("g") //regular graphic operation
+      .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+    semiplotScatter('data/anscombe_II.csv', svgTwo, _width, _height);
+
+    var svgThree = d3.select('#scatterplotSet')
+      .append('svg')
+      .attr("width", _width + margin.left + margin.right)
+      .attr("height", _height + margin.top + margin.bottom)
+      .append("g") //regular graphic operation
+      .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+    semiplotScatter('data/anscombe_III.csv', svgThree, _width, _height);
+    var svgFour = d3.select('#scatterplotSet')
+      .append('svg')
+      .attr("width", _width + margin.left + margin.right)
+      .attr("height", _height + margin.top + margin.bottom)
+      .append("g") //regular graphic operation
+      .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+    semiplotScatter('data/anscombe_IV.csv', svgFour, _width, _height);
+  </script>
+</body>
+
+
+</html>
