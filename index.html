@@ -16,6 +16,7 @@
 
   <div id="partTwo">
     <h1>Part Two: </h1>
+    <select id="dropdown1"></select>
     <!-- <input type="checkbox" id="check"> Sorted along x -->
     <div id="barchart">
     </div>
@@ -24,7 +25,7 @@
 
   <div id="partThree">
     <h1>Part Three &amp; Four: </h1>
-    <select id="dropdown"></select>
+    <select id="dropdown2"></select>
     <div id="scatterplot">
       <p id="scatterLabel"></p>
     </div>
@@ -78,24 +79,31 @@
     }
 
     // Put your part two code here ***********************
+    dropdown_options = [{
+        value: "data/anscombe_I.csv",
+        text: "anscombe_I"
+      },
+      {
+        value: "data/anscombe_II.csv",
+        text: "anscombe_II"
+      },
+      {
+        value: "data/anscombe_III.csv",
+        text: "anscombe_III"
+      },
+      {
+        value: "data/anscombe_IV.csv",
+        text: "anscombe_IV"
+      },
 
-    var width = 700;
-    var height = 400;
+    ]
 
-    var margin = {
-      top: 20,
-      right: 20,
-      bottom: 30,
-      left: 50
-    };
-
-    var data_line = 'data/anscombe_I.csv';
-    var sorted = false;
-    function lineScatter(datasource, id, width, height) {
+    function plotScatter(datasource, id, width, height, transition, isPath) {
 
       d3.csv(datasource, function(error, data1) {
 
         var barHeight = 10;
+
 
         var x = d3.scaleLinear()
           .range([0, width]);
@@ -110,7 +118,7 @@
           return d.x;
         }));
 
-        y.domain([0, d3.max(data1, function(d) {
+        y.domain([0, 0.5+ d3.max(data1, function(d) {
           d.y = parseFloat(d.y);
           return d.y;
         })]);
@@ -130,146 +138,16 @@
             return y(d.y);
           });
 
-
-
-
-
-        var mouseClick = function(d) {
-          var p = d3.select("#scatterLabel")
-            .text("(x,y) : (" + d.x + "," + d.y + ")");
-        }
-
-        var mouseover = function(d) {
-          var p = d3.select(this)
-            .style("fill", "lightblue");
-          tooltip.text("(" + d.x + "," + d.y + ")");
-          tooltip.style("top", d3.event.pageY - 10 + "px")
-            .style("left", (d3.event.pageX + 10) + "px");
-          tooltip.style("opacity", "0.9");
-        }
-
-        var mouseout = function(d) {
-          var p = d3.select(this).style("fill", "black");
-          tooltip.transition()
-            .duration(500)
-            .style("opacity", 0);
-        }
-
-
-        var svg = d3.select(id)
-          .append('svg')
-          .attr("width", width + margin.left + margin.right)
-          .attr("height", height + margin.top + margin.bottom)
-          .append("g") //regular graphic operation
-          .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-
-        svg.append("path")
-          .data([data1])
-          .attr("class", "line")
-          .attr("d", valueline)
-          .attr('fill', 'none')
-          .attr('stroke', 'lightblue')
-          .attr('stroke-width', 2);
-        svg.selectAll("circle")
-          .data(data1)
-          .enter()
-          .append("circle")
-          .attr("r", 4)
-          .attr("cy", function(d) {
-            return y(d.y);
-          })
-          .attr("cx", function(d, i) {
-            return x(d.x);
-          })
-          .on('mousedown', mouseClick)
-          .on('mouseover', mouseover)
-          .on('mouseout', mouseout);
-
-        svg.append('g')
-          .attr('class', 'xaxis')
-          .attr('transform', 'translate(0,' + height + ')')
-          .call(d3.axisBottom(x));
-
-        // Add the Y Axis
-        svg.append('g')
-          .attr('class', 'yaxis')
-          .call(d3.axisLeft(y));
-
-
-        svg.append("text")
-          .attr("x", (_width / 2))
-          .attr("y", (margin.top / 2))
-          .attr("text-anchor", "middle")
-          .attr('class', 'title')
-          .style("font-size", "16px")
-          .style("text-decoration", "underline")
-          .text(datasource);
-
-
-        var xLabel = svg.append('text')
-          .attr('class', 'label')
-          .text("x")
-          .attr("x", width - 20)
-          .attr('y', height - 10);
-
-
-        var yLabel = svg.append('text')
-          .attr('class', 'label')
-          .text("y")
-          .attr('x', -20)
-          .attr('y', 15)
-          .attr('transform', 'rotate(-90)')
-          .style('text-anchor', 'start');
-      });
-    }
-
-
-    lineScatter(data_line, '#barchart', width, height);
-
-
-
-
-
-
-    // Put your part three & four code here ***********************
-    function plotScatter(datasource, id, width, height, transition) {
-
-      d3.csv(datasource, function(error, data1) {
-
-        var barHeight = 10;
-
-        var x = d3.scaleLinear()
-          .range([0, width]);
-
-        //scale linear y
-        var y = d3.scaleLinear()
-          .range([height, 0]);
-
-        //x and y domain
-        x.domain(d3.extent(data1, function(d) {
-          d.x = parseFloat(d.x);
-          return d.x;
-        }));
-
-        y.domain([0, d3.max(data1, function(d) {
-          d.y = parseFloat(d.y);
-          return d.y;
-        })]);
-
-        //creating svg element
-        var tooltip = d3.select("body").append("div")
-          .attr("class", "tooltip")
-          .style("position", "absolute")
-          .style("z-index", "10")
-          .style("opacity", "0");
-
-        var valueline = d3.line()
-          .x(function(d) {
-            return x(d.x);
-          })
-          .y(function(d) {
-            return y(d.y);
-          });
+          function compare(a,b)
+            {
+              if(a.x > b.x)
+                return 1;
+              else {
+                return -1;
+              }
+            }
+            data1.sort(compare);
+            console.log(data1);
 
 
         var mouseClick = function(d) {
@@ -302,6 +180,25 @@
             .attr("height", height + margin.top + margin.bottom)
             .append("g") //regular graphic operation
             .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+            var valueline = d3.line()
+              .x(function(d) {
+                return x(d.x);
+              })
+              .y(function(d) {
+                return y(d.y);
+              });
+
+
+            if(isPath)
+            {
+              svg.append("path")
+                .data([data1])
+                .attr("class", "line")
+                .attr("d", valueline)
+                .attr('fill', 'none')
+                .attr('stroke', 'lightblue')
+                .attr('stroke-width', 2);
+            }
           svg.selectAll("circle")
             .data(data1)
             .enter()
@@ -356,10 +253,20 @@
 
         } else {
           svg = d3.select(id).select("svg");
+          var valueline = d3.line()
+            .x(function(d) {
+              return x(d.x);
+            })
+            .y(function(d) {
+              return y(d.y);
+            });
+
+
+
           svg.selectAll("circle")
             .data(data1)
             .transition()
-            .duration(1000)
+            .duration(500)
             .delay(function(d, i) {
               return i / data1.length * 500; // Dynamic delay (i.e. each item delays a little longer)
             })
@@ -369,6 +276,20 @@
             .attr('cy', function(d) {
               return y(d.y);
             });
+
+          if(isPath)
+            {
+              svg.select("path")
+              .data([data1])
+              .attr("class", "line")
+              .transition()
+              .duration(500)
+              .attr("d", valueline)
+              .attr('fill', 'none')
+              .attr('stroke', 'lightblue')
+              .attr('stroke-width', 2);
+            }
+
           svg.select(".xaxis")
             .transition()
             .duration(1000)
@@ -389,25 +310,8 @@
       });
     }
 
-    dropdown_options = [{
-        value: "data/anscombe_I.csv",
-        text: "anscombe_I"
-      },
-      {
-        value: "data/anscombe_II.csv",
-        text: "anscombe_II"
-      },
-      {
-        value: "data/anscombe_III.csv",
-        text: "anscombe_III"
-      },
-      {
-        value: "data/anscombe_IV.csv",
-        text: "anscombe_IV"
-      },
 
-    ]
-    d3.select("#dropdown")
+    d3.select("#dropdown1")
       .selectAll("option")
       .data(dropdown_options)
       .enter()
@@ -419,19 +323,59 @@
         return option.text;
       });
 
-    var selected_dataset = "data/anscombe_I.csv";
-    var already_there = false;
-    var dropDown = d3.select("#dropdown");
+    var selected_dataset_1 = "data/anscombe_I.csv";
+    var already_there_1 = false;  //to see if we already have the svg on the canvas
+    var dropDown = d3.select("#dropdown1");
 
     dropDown.on("change", function() {
-      selected_dataset = d3.event.target.value;
-      if (already_there) {
-        plotScatter(selected_dataset, '#scatterplot', width, height, true);
+      selected_dataset_1 = d3.event.target.value;
+      if (already_there_1) {
+        plotScatter(selected_dataset_1, '#barchart', width, height, true);
       } else
-        plotScatter(selected_dataset, '#scatterplot', width, height, false);
-      already_there = true;
+        plotScatter(selected_dataset_1, '#barchart', width, height, false);
+      already_there_1 = true;
     })
 
+
+
+    // Put your part three & four code here ***********************
+
+
+        d3.select("#dropdown2")
+          .selectAll("option")
+          .data(dropdown_options)
+          .enter()
+          .append("option")
+          .attr("value", function(option) {
+            return option.value;
+          })
+          .text(function(option) {
+            return option.text;
+          });
+
+        var width = 700;
+        var height = 400;
+
+        var margin = {
+          top: 20,
+          right: 20,
+          bottom: 30,
+          left: 50
+        };
+
+        var selected_dataset = "data/anscombe_I.csv";
+        var already_there = false;
+        var sorted = false;
+        var dropDown = d3.select("#dropdown2");
+
+        dropDown.on("change", function() {
+          selected_dataset = d3.event.target.value;
+          if (already_there) {
+            plotScatter(selected_dataset, '#scatterplot', width, height,true,true);
+          } else
+            plotScatter(selected_dataset, '#scatterplot', width, height,false,true);
+          already_there = true;
+        })
 
     // Put your part five code here ***********************
 
@@ -454,10 +398,12 @@
           return d.x;
         }));
 
-        y.domain([0, d3.max(data1, function(d) {
+        y.domain([0, 1+ d3.max(data1, function(d) {
           d.y = parseFloat(d.y);
           return d.y;
         })]);
+
+
 
         var tooltip = d3.select("body").append("div")
           .attr("class", "tooltip")
